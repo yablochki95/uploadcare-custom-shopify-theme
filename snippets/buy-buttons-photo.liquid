@@ -1,0 +1,278 @@
+{% comment %}
+  Renders product buy-buttons with photo upload integration.
+  Accepts:
+  - product: {Object} product object.
+  - block: {Object} passing the block information.
+  - product_form_id: {String} product form id.
+  - section_id: {String} id of section to which this snippet belongs.
+  - show_pickup_availability: {Boolean} for the pickup availability. If true the pickup availability is rendered, false - not rendered (optional).
+
+  Usage:
+  {% render 'buy-buttons-photo', block: block, product: product, product_form_id: product_form_id, section_id: section.id, show_pickup_availability: true %}
+{% endcomment %}
+<div {{ block.shopify_attributes }}>
+  {%- if product != blank -%}
+    {%- liquid
+      assign gift_card_recipient_feature_active = false
+      if block.settings.show_gift_card_recipient and product.gift_card?
+        assign gift_card_recipient_feature_active = true
+      endif
+
+      assign show_dynamic_checkout = false
+      if block.settings.show_dynamic_checkout and gift_card_recipient_feature_active == false
+        assign show_dynamic_checkout = true
+      endif
+    -%}
+
+    <product-form
+      class="product-form"
+      data-hide-errors="{{ gift_card_recipient_feature_active }}"
+      data-section-id="{{ section.id }}"
+    >
+      <div class="product-form__error-message-wrapper" role="alert" hidden>
+        <span class="svg-wrapper">
+          {{- 'icon-error.svg' | inline_asset_content -}}
+        </span>
+        <span class="product-form__error-message"></span>
+      </div>
+
+      {%- form 'product',
+        product,
+        id: product_form_id,
+        class: 'form',
+        novalidate: 'novalidate',
+        data-type: 'add-to-cart-form'
+      -%}
+        <input
+          type="hidden"
+          name="id"
+          value="{{ product.selected_or_first_available_variant.id }}"
+          {% if product.selected_or_first_available_variant.available == false
+            or quantity_rule_soldout
+            or product.selected_or_first_available_variant == null
+          %}
+            disabled
+          {% endif %}
+          class="product-variant-id"
+        >
+
+        <!-- Hidden inputs for photo URLs -->
+        <div id="photo-urls-container" style="display: none;">
+          <!-- Photo URLs will be populated by JavaScript -->
+        </div>
+
+        {%- if gift_card_recipient_feature_active -%}
+          {%- render 'gift-card-recipient-form', product: product, form: form, section: section -%}
+        {%- endif -%}
+
+        {%- liquid
+          assign required_photos = 9
+          if product.title == 'NFC chip'
+            assign required_photos = 1
+          elsif product.title == 'Order Photo Frame'
+            assign required_photos = 0
+          endif
+        -%}
+        <div class="product-form__buttons">
+          {%- liquid
+            assign check_against_inventory = true
+            if product.selected_or_first_available_variant.inventory_management != 'shopify' or product.selected_or_first_available_variant.inventory_policy == 'continue'
+              assign check_against_inventory = false
+            endif
+            if product.selected_or_first_available_variant.quantity_rule.min > product.selected_or_first_available_variant.inventory_quantity and check_against_inventory
+              assign quantity_rule_soldout = true
+            endif
+          -%}
+          <button
+            id="ProductSubmitButton-{{ section_id }}"
+            type="submit"
+            name="add"
+            class="product-form__submit button button--full-width {% if show_dynamic_checkout %}button--secondary{% else %}button--primary{% endif %}{% if required_photos > 0 %} btn--disabled{% endif %}"
+            {% if required_photos > 0 %}disabled{% endif %}
+          >
+            <span>
+              {%- if required_photos == 0 -%}
+                Add to Cart
+              {%- elsif required_photos == 1 -%}
+                {%- if product.title == 'NFC chip' -%}
+                  Upload 1 audio to add to cart
+                {%- else -%}
+                  Upload 1 photo to add to cart
+                {%- endif -%}
+              {%- else -%}
+                Upload {{ required_photos }} photos to add to cart
+              {%- endif -%}
+            </span>
+            {%- render 'loading-spinner' -%}
+          </button>
+          {%- if show_dynamic_checkout -%}
+            {{ form | payment_button }}
+          {%- endif -%}
+        </div>
+      {%- endform -%}
+    </product-form>
+  {%- else -%}
+    <div class="product-form">
+      <div class="product-form__buttons form">
+        <button
+          type="submit"
+          name="add"
+          class="product-form__submit button button--full-width button--primary"
+          disabled
+        >
+          {{ 'products.product.sold_out' | t }}
+        </button>
+      </div>
+    </div>
+  {%- endif -%}
+
+  {%- if show_pickup_availability -%}
+    {{ 'component-pickup-availability.css' | asset_url | stylesheet_tag }}
+
+    {%- assign pick_up_availabilities = product.selected_or_first_available_variant.store_availabilities
+      | where: 'pick_up_enabled', true
+    -%}
+
+    <pickup-availability
+      class="product__pickup-availabilities quick-add-hidden"
+      {% if product.selected_or_first_available_variant.available and pick_up_availabilities.size > 0 %}
+        available
+      {% endif %}
+      data-root-url="{{ routes.root_url }}"
+      data-variant-id="{{ product.selected_or_first_available_variant.id }}"
+      data-has-only-default-variant="{{ product.has_only_default_variant }}"
+      data-product-page-color-scheme="gradient color-{{ section.settings.color_scheme }}"
+    >
+      <template>
+        <pickup-availability-preview class="pickup-availability-preview">
+          <span class="svg-wrapper">
+            {{- 'icon-unavailable.svg' | inline_asset_content -}}
+          </span>
+          <div class="pickup-availability-info">
+            <p class="caption-large">{{ 'products.product.pickup_availability.unavailable' | t }}</p>
+            <button class="pickup-availability-button link link--text underlined-link">
+              {{ 'products.product.pickup_availability.refresh' | t }}
+            </button>
+          </div>
+        </pickup-availability-preview>
+      </template>
+    </pickup-availability>
+
+    <script src="{{ 'pickup-availability.js' | asset_url }}" defer="defer"></script>
+  {%- endif -%}
+</div>
+
+<script>
+  class PhotoBuyButtons {
+    constructor() {
+      this.uploadedPhotos = [];
+      // Set per product title
+      this.maxPhotos = (function() {
+        const title = {{ product.title | json }};
+        if (title === 'NFC chip') return 1;
+        if (title === 'Order Photo Frame') return 0;
+        return 9;
+      })();
+      this.init();
+    }
+
+    init() {
+      // Listen for photo upload updates
+      document.addEventListener('photoUploadUpdated', (event) => {
+        this.uploadedPhotos = event.detail.photos;
+        this.updateAddToCartButton();
+        this.updatePhotoUrls();
+      });
+
+      // Listen for form submission
+      const form = document.querySelector('[data-type="add-to-cart-form"]');
+      if (form) {
+        form.addEventListener('submit', (e) => {
+          if (this.maxPhotos === 0) {
+            // No gating for Order Photo Frame
+            return;
+          }
+          if (this.uploadedPhotos.length !== this.maxPhotos) {
+            e.preventDefault();
+            const remaining = Math.max(this.maxPhotos - this.uploadedPhotos.length, 0);
+            alert(`Please upload ${remaining} more photo${remaining === 1 ? '' : 's'} before adding to cart.`);
+            return false;
+          }
+        });
+      }
+    }
+
+    updateAddToCartButton() {
+      const addToCartBtn = document.getElementById('ProductSubmitButton-{{ section_id }}');
+      const isComplete = this.uploadedPhotos.length === this.maxPhotos;
+      
+      if (addToCartBtn) {
+        if (isComplete) {
+          addToCartBtn.disabled = false;
+          addToCartBtn.textContent = 'Add to Cart';
+          addToCartBtn.classList.remove('btn--disabled');
+        } else {
+          addToCartBtn.disabled = true;
+          {%- if product.title == 'NFC chip' -%}
+            addToCartBtn.textContent = `Upload 1 audio`;
+          {%- else -%}
+            addToCartBtn.textContent = `Upload ${this.maxPhotos - this.uploadedPhotos.length} more photos`;
+          {%- endif -%}
+          addToCartBtn.classList.add('btn--disabled');
+        }
+      }
+    }
+
+    updatePhotoUrls() {
+      const container = document.getElementById('photo-urls-container');
+      if (container) {
+        // Clear existing inputs
+        container.innerHTML = '';
+        
+        // Add photo URLs as hidden inputs with underscore prefix
+        this.uploadedPhotos.forEach((photo, index) => {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          const isAudio = {{ product.title | json }} === 'NFC chip';
+          const prefix = isAudio ? '_Audio' : '_Photo';
+          input.name = `properties[${prefix} ${index + 1} URL]`;
+          input.value = photo.url;
+          container.appendChild(input);
+        });
+
+        // Add a summary input with all URLs
+        const summaryInput = document.createElement('input');
+        summaryInput.type = 'hidden';
+        const isAudio = {{ product.title | json }} === 'NFC chip';
+        const summaryKey = isAudio ? '_Audio URLs Summary' : '_Photo URLs Summary';
+        summaryInput.name = `properties[${summaryKey}]`;
+        summaryInput.value = this.uploadedPhotos.map(photo => photo.url).join(', ');
+        container.appendChild(summaryInput);
+
+        // Add friendly display property (visible to customer)
+        const displayInput = document.createElement('input');
+        displayInput.type = 'hidden';
+        const displayKey = isAudio ? 'Audio uploaded' : 'Photos uploaded';
+        displayInput.name = `properties[${displayKey}]`;
+        displayInput.value = `${this.uploadedPhotos.length} ${isAudio ? 'audio file' : 'photos'}`;
+        container.appendChild(displayInput);
+      }
+    }
+  }
+
+  // Initialize when DOM is ready
+  document.addEventListener('DOMContentLoaded', () => {
+    if (!window.photoBuyButtons) {
+      window.photoBuyButtons = new PhotoBuyButtons();
+      // If the uploader already has photos, sync initial state
+      if (window.photoUploadManager && typeof window.photoUploadManager.getUploadedPhotos === 'function') {
+        const photos = window.photoUploadManager.getUploadedPhotos() || [];
+        if (photos.length) {
+          window.photoBuyButtons.uploadedPhotos = photos;
+          window.photoBuyButtons.updateAddToCartButton();
+          window.photoBuyButtons.updatePhotoUrls();
+        }
+      }
+    }
+  });
+</script>
