@@ -1,0 +1,498 @@
+{% doc %}
+  @prompt
+    You should insert the following content. It should be modern and fit the surrounding environment.
+    ::
+    How It Works
+    
+    1. Upload Your Pictures
+    Upload your pictures from Instagram and Camera Roll using our simple interface. Crop, edit and preview the pictures before submitting them.
+    
+     
+    
+    2. Place Order
+    When you are happy with your choice of pictures, simply add them to the cart,proceed to checkout, enter your shipping info and email and place your order.
+    
+     
+    
+    3. Track Your Order
+    Once the order is placed, we will print, cut, pack and ship your order. You will receive a confirmation with tracking.
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-how-it-works-{{ ai_gen_id }} {
+    padding: {{ block.settings.section_padding_top }}px 0 {{ block.settings.section_padding_bottom }}px;
+    background-color: {{ block.settings.background_color }};
+  }
+
+  .ai-how-it-works-container-{{ ai_gen_id }} {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  .ai-how-it-works-header-{{ ai_gen_id }} {
+    text-align: center;
+    margin-bottom: {{ block.settings.steps_spacing }}px;
+  }
+
+  .ai-how-it-works-title-{{ ai_gen_id }} {
+    font-size: {{ block.settings.title_size }}px;
+    color: {{ block.settings.title_color }};
+    margin: 0 0 16px;
+    font-weight: 600;
+  }
+
+  .ai-how-it-works-subtitle-{{ ai_gen_id }} {
+    font-size: {{ block.settings.subtitle_size }}px;
+    color: {{ block.settings.subtitle_color }};
+    margin: 0;
+    opacity: 0.8;
+  }
+
+  .ai-how-it-works-steps-{{ ai_gen_id }} {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: {{ block.settings.steps_gap }}px;
+    margin-top: {{ block.settings.steps_spacing }}px;
+  }
+
+  .ai-how-it-works-step-{{ ai_gen_id }} {
+    text-align: center;
+    padding: {{ block.settings.step_padding }}px;
+    background-color: {{ block.settings.step_background_color }};
+    border-radius: {{ block.settings.step_border_radius }}px;
+    border: {{ block.settings.step_border_width }}px solid {{ block.settings.step_border_color }};
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .ai-how-it-works-step-{{ ai_gen_id }}:hover {
+    transform: translateY(-{{ block.settings.hover_lift }}px);
+    box-shadow: 0 {{ block.settings.hover_lift | times: 2 }}px {{ block.settings.hover_lift | times: 4 }}px rgba(0, 0, 0, 0.1);
+  }
+
+  .ai-how-it-works-step-number-{{ ai_gen_id }} {
+    width: {{ block.settings.number_size }}px;
+    height: {{ block.settings.number_size }}px;
+    background-color: {{ block.settings.number_background_color }};
+    color: {{ block.settings.number_text_color }};
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: {{ block.settings.number_font_size }}px;
+    font-weight: 700;
+    margin: 0 auto 24px;
+    border: 3px solid {{ block.settings.number_border_color }};
+  }
+
+  .ai-how-it-works-step-title-{{ ai_gen_id }} {
+    font-size: {{ block.settings.step_title_size }}px;
+    color: {{ block.settings.step_title_color }};
+    margin: 0 0 16px;
+    font-weight: 600;
+  }
+
+  .ai-how-it-works-step-description-{{ ai_gen_id }} {
+    font-size: {{ block.settings.step_description_size }}px;
+    color: {{ block.settings.step_description_color }};
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .ai-how-it-works-connector-{{ ai_gen_id }} {
+    display: none;
+  }
+
+  @media screen and (min-width: 990px) {
+    .ai-how-it-works-steps-{{ ai_gen_id }} {
+      grid-template-columns: repeat(3, 1fr);
+      position: relative;
+    }
+
+    {% if block.settings.show_connectors %}
+      .ai-how-it-works-connector-{{ ai_gen_id }} {
+        display: block;
+        position: absolute;
+        top: {{ block.settings.number_size | divided_by: 2 | plus: block.settings.step_padding }}px;
+        width: calc(100% - {{ block.settings.number_size }}px);
+        height: 2px;
+        background: linear-gradient(to right, {{ block.settings.connector_color }} 0%, {{ block.settings.connector_color }} 45%, transparent 45%, transparent 55%, {{ block.settings.connector_color }} 55%, {{ block.settings.connector_color }} 100%);
+        z-index: 1;
+      }
+
+      .ai-how-it-works-connector-{{ ai_gen_id }}:nth-child(1) {
+        left: calc(33.33% + {{ block.settings.number_size | divided_by: 2 }}px);
+        width: calc(33.33% - {{ block.settings.number_size }}px);
+      }
+
+      .ai-how-it-works-connector-{{ ai_gen_id }}:nth-child(2) {
+        left: calc(66.66% + {{ block.settings.number_size | divided_by: 2 }}px);
+        width: calc(33.33% - {{ block.settings.number_size }}px);
+      }
+    {% endif %}
+  }
+
+  @media screen and (max-width: 749px) {
+    .ai-how-it-works-steps-{{ ai_gen_id }} {
+      grid-template-columns: 1fr;
+      gap: {{ block.settings.steps_gap | times: 0.75 }}px;
+    }
+
+    .ai-how-it-works-step-{{ ai_gen_id }} {
+      padding: {{ block.settings.step_padding | times: 0.75 }}px;
+    }
+
+    .ai-how-it-works-title-{{ ai_gen_id }} {
+      font-size: {{ block.settings.title_size | times: 0.85 }}px;
+    }
+
+    .ai-how-it-works-step-title-{{ ai_gen_id }} {
+      font-size: {{ block.settings.step_title_size | times: 0.9 }}px;
+    }
+  }
+{% endstyle %}
+
+<div class="ai-how-it-works-{{ ai_gen_id }}" {{ block.shopify_attributes }}>
+  <div class="ai-how-it-works-container-{{ ai_gen_id }}">
+    {% if block.settings.title != blank or block.settings.subtitle != blank %}
+      <div class="ai-how-it-works-header-{{ ai_gen_id }}">
+        {% if block.settings.title != blank %}
+          <h2 class="ai-how-it-works-title-{{ ai_gen_id }}">{{ block.settings.title }}</h2>
+        {% endif %}
+        {% if block.settings.subtitle != blank %}
+          <p class="ai-how-it-works-subtitle-{{ ai_gen_id }}">{{ block.settings.subtitle }}</p>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <div class="ai-how-it-works-steps-{{ ai_gen_id }}">
+      {% if block.settings.show_connectors %}
+        <div class="ai-how-it-works-connector-{{ ai_gen_id }}"></div>
+        <div class="ai-how-it-works-connector-{{ ai_gen_id }}"></div>
+      {% endif %}
+
+      <div class="ai-how-it-works-step-{{ ai_gen_id }}">
+        <div class="ai-how-it-works-step-number-{{ ai_gen_id }}">1</div>
+        <h3 class="ai-how-it-works-step-title-{{ ai_gen_id }}">{{ block.settings.step_1_title }}</h3>
+        <p class="ai-how-it-works-step-description-{{ ai_gen_id }}">{{ block.settings.step_1_description }}</p>
+      </div>
+
+      <div class="ai-how-it-works-step-{{ ai_gen_id }}">
+        <div class="ai-how-it-works-step-number-{{ ai_gen_id }}">2</div>
+        <h3 class="ai-how-it-works-step-title-{{ ai_gen_id }}">{{ block.settings.step_2_title }}</h3>
+        <p class="ai-how-it-works-step-description-{{ ai_gen_id }}">{{ block.settings.step_2_description }}</p>
+      </div>
+
+      <div class="ai-how-it-works-step-{{ ai_gen_id }}">
+        <div class="ai-how-it-works-step-number-{{ ai_gen_id }}">3</div>
+        <h3 class="ai-how-it-works-step-title-{{ ai_gen_id }}">{{ block.settings.step_3_title }}</h3>
+        <p class="ai-how-it-works-step-description-{{ ai_gen_id }}">{{ block.settings.step_3_description }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "How it works",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Section header"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title",
+      "default": "How It Works"
+    },
+    {
+      "type": "text",
+      "id": "subtitle",
+      "label": "Subtitle"
+    },
+    {
+      "type": "range",
+      "id": "title_size",
+      "min": 20,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "label": "Title size",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "subtitle_size",
+      "min": 14,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Subtitle size",
+      "default": 16
+    },
+    {
+      "type": "header",
+      "content": "Steps content"
+    },
+    {
+      "type": "text",
+      "id": "step_1_title",
+      "label": "Step 1 title",
+      "default": "Upload Your Pictures"
+    },
+    {
+      "type": "textarea",
+      "id": "step_1_description",
+      "label": "Step 1 description",
+      "default": "Upload your pictures from Instagram and Camera Roll using our simple interface. Crop, edit and preview the pictures before submitting them."
+    },
+    {
+      "type": "text",
+      "id": "step_2_title",
+      "label": "Step 2 title",
+      "default": "Place Order"
+    },
+    {
+      "type": "textarea",
+      "id": "step_2_description",
+      "label": "Step 2 description",
+      "default": "When you are happy with your choice of pictures, simply add them to the cart, proceed to checkout, enter your shipping info and email and place your order."
+    },
+    {
+      "type": "text",
+      "id": "step_3_title",
+      "label": "Step 3 title",
+      "default": "Track Your Order"
+    },
+    {
+      "type": "textarea",
+      "id": "step_3_description",
+      "label": "Step 3 description",
+      "default": "Once the order is placed, we will print, cut, pack and ship your order. You will receive a confirmation with tracking."
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "steps_spacing",
+      "min": 20,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "label": "Header to steps spacing",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "steps_gap",
+      "min": 16,
+      "max": 60,
+      "step": 4,
+      "unit": "px",
+      "label": "Gap between steps",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "step_padding",
+      "min": 16,
+      "max": 60,
+      "step": 4,
+      "unit": "px",
+      "label": "Step padding",
+      "default": 32
+    },
+    {
+      "type": "checkbox",
+      "id": "show_connectors",
+      "label": "Show connecting lines",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "hover_lift",
+      "min": 0,
+      "max": 12,
+      "step": 2,
+      "unit": "px",
+      "label": "Hover lift effect",
+      "default": 4
+    },
+    {
+      "type": "header",
+      "content": "Section colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "title_color",
+      "label": "Title color",
+      "default": "#121212"
+    },
+    {
+      "type": "color",
+      "id": "subtitle_color",
+      "label": "Subtitle color",
+      "default": "#121212"
+    },
+    {
+      "type": "header",
+      "content": "Step colors"
+    },
+    {
+      "type": "color",
+      "id": "step_background_color",
+      "label": "Step background color",
+      "default": "#f9f9f9"
+    },
+    {
+      "type": "color",
+      "id": "step_border_color",
+      "label": "Step border color",
+      "default": "#e5e5e5"
+    },
+    {
+      "type": "range",
+      "id": "step_border_width",
+      "min": 0,
+      "max": 4,
+      "step": 1,
+      "unit": "px",
+      "label": "Step border width",
+      "default": 1
+    },
+    {
+      "type": "range",
+      "id": "step_border_radius",
+      "min": 0,
+      "max": 24,
+      "step": 2,
+      "unit": "px",
+      "label": "Step border radius",
+      "default": 8
+    },
+    {
+      "type": "color",
+      "id": "step_title_color",
+      "label": "Step title color",
+      "default": "#121212"
+    },
+    {
+      "type": "color",
+      "id": "step_description_color",
+      "label": "Step description color",
+      "default": "#666666"
+    },
+    {
+      "type": "header",
+      "content": "Step numbers"
+    },
+    {
+      "type": "range",
+      "id": "number_size",
+      "min": 40,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "label": "Number circle size",
+      "default": 60
+    },
+    {
+      "type": "range",
+      "id": "number_font_size",
+      "min": 16,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "label": "Number font size",
+      "default": 24
+    },
+    {
+      "type": "color",
+      "id": "number_background_color",
+      "label": "Number background color",
+      "default": "#121212"
+    },
+    {
+      "type": "color",
+      "id": "number_text_color",
+      "label": "Number text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "number_border_color",
+      "label": "Number border color",
+      "default": "#121212"
+    },
+    {
+      "type": "color",
+      "id": "connector_color",
+      "label": "Connector line color",
+      "default": "#e5e5e5"
+    },
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    {
+      "type": "range",
+      "id": "step_title_size",
+      "min": 16,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "label": "Step title size",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "step_description_size",
+      "min": 14,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Step description size",
+      "default": 16
+    },
+    {
+      "type": "header",
+      "content": "Section spacing"
+    },
+    {
+      "type": "range",
+      "id": "section_padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 60
+    },
+    {
+      "type": "range",
+      "id": "section_padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 60
+    }
+  ],
+  "presets": [
+    {
+      "name": "How it works"
+    }
+  ]
+}
+{% endschema %}

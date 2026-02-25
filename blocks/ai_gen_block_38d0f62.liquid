@@ -1,0 +1,618 @@
+{% doc %}
+  @prompt
+    Create appropriate content for your current location for a modern landing page. It should be relevant to the section.
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-landing-hero-{{ ai_gen_id }} {
+    position: relative;
+    min-height: {{ block.settings.section_height }}vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: {{ block.settings.background_color }};
+    {% if block.settings.background_gradient != blank %}
+      background: {{ block.settings.background_gradient }};
+    {% endif %}
+    overflow: hidden;
+  }
+
+  .ai-landing-hero-container-{{ ai_gen_id }} {
+    max-width: 1200px;
+    width: 100%;
+    padding: 0 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+  }
+
+  .ai-landing-hero-content-{{ ai_gen_id }} {
+    text-align: {{ block.settings.text_alignment }};
+  }
+
+  .ai-landing-hero-badge-{{ ai_gen_id }} {
+    display: inline-block;
+    padding: 8px 16px;
+    background-color: {{ block.settings.badge_background }};
+    color: {{ block.settings.badge_text_color }};
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 20px;
+    border: 1px solid {{ block.settings.badge_border_color }};
+  }
+
+  .ai-landing-hero-heading-{{ ai_gen_id }} {
+    font-size: {{ block.settings.heading_size }}px;
+    font-weight: 700;
+    line-height: 1.2;
+    color: {{ block.settings.heading_color }};
+    margin: 0 0 20px;
+  }
+
+  .ai-landing-hero-subheading-{{ ai_gen_id }} {
+    font-size: {{ block.settings.subheading_size }}px;
+    line-height: 1.6;
+    color: {{ block.settings.text_color }};
+    margin: 0 0 30px;
+    opacity: 0.9;
+  }
+
+  .ai-landing-hero-buttons-{{ ai_gen_id }} {
+    display: flex;
+    gap: 16px;
+    {% if block.settings.text_alignment == 'center' %}
+      justify-content: center;
+    {% elsif block.settings.text_alignment == 'right' %}
+      justify-content: flex-end;
+    {% endif %}
+    flex-wrap: wrap;
+  }
+
+  .ai-landing-hero-button-{{ ai_gen_id }} {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 32px;
+    border-radius: {{ block.settings.button_border_radius }}px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+  }
+
+  .ai-landing-hero-button-primary-{{ ai_gen_id }} {
+    background-color: {{ block.settings.primary_button_bg }};
+    color: {{ block.settings.primary_button_text_color }};
+  }
+
+  .ai-landing-hero-button-primary-{{ ai_gen_id }}:hover {
+    background-color: {{ block.settings.primary_button_hover_bg }};
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  }
+
+  .ai-landing-hero-button-secondary-{{ ai_gen_id }} {
+    background-color: transparent;
+    color: {{ block.settings.secondary_button_text_color }};
+    border-color: {{ block.settings.secondary_button_border }};
+  }
+
+  .ai-landing-hero-button-secondary-{{ ai_gen_id }}:hover {
+    background-color: {{ block.settings.secondary_button_hover_bg }};
+    color: {{ block.settings.secondary_button_hover_text }};
+    transform: translateY(-2px);
+  }
+
+  .ai-landing-hero-image-wrapper-{{ ai_gen_id }} {
+    position: relative;
+    border-radius: {{ block.settings.image_border_radius }}px;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  }
+
+  .ai-landing-hero-image-{{ ai_gen_id }} {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: {{ block.settings.image_border_radius }}px;
+  }
+
+  .ai-landing-hero-image-placeholder-{{ ai_gen_id }} {
+    width: 100%;
+    height: 400px;
+    background-color: #f8f9fa;
+    border-radius: {{ block.settings.image_border_radius }}px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .ai-landing-hero-image-placeholder-{{ ai_gen_id }} svg {
+    width: 100%;
+    height: 100%;
+    max-width: 200px;
+    max-height: 200px;
+    opacity: 0.3;
+  }
+
+  .ai-landing-hero-empty-state-{{ ai_gen_id }} {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.9);
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #666;
+    text-align: center;
+    backdrop-filter: blur(10px);
+  }
+
+  .ai-landing-hero-features-{{ ai_gen_id }} {
+    display: flex;
+    gap: 24px;
+    margin-top: 40px;
+    {% if block.settings.text_alignment == 'center' %}
+      justify-content: center;
+    {% elsif block.settings.text_alignment == 'right' %}
+      justify-content: flex-end;
+    {% endif %}
+    flex-wrap: wrap;
+  }
+
+  .ai-landing-hero-feature-{{ ai_gen_id }} {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: {{ block.settings.text_color }};
+    font-size: 14px;
+  }
+
+  .ai-landing-hero-feature-icon-{{ ai_gen_id }} {
+    width: 20px;
+    height: 20px;
+    color: {{ block.settings.primary_button_bg }};
+  }
+
+  .ai-landing-hero-background-decoration-{{ ai_gen_id }} {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .ai-landing-hero-decoration-circle-{{ ai_gen_id }} {
+    position: absolute;
+    border-radius: 50%;
+    background: linear-gradient(135deg, {{ block.settings.primary_button_bg }}20, {{ block.settings.primary_button_bg }}10);
+  }
+
+  .ai-landing-hero-decoration-circle-1-{{ ai_gen_id }} {
+    width: 200px;
+    height: 200px;
+    top: 10%;
+    right: 10%;
+    animation: ai-landing-hero-float-{{ ai_gen_id }} 6s ease-in-out infinite;
+  }
+
+  .ai-landing-hero-decoration-circle-2-{{ ai_gen_id }} {
+    width: 120px;
+    height: 120px;
+    bottom: 20%;
+    left: 5%;
+    animation: ai-landing-hero-float-{{ ai_gen_id }} 8s ease-in-out infinite reverse;
+  }
+
+  @keyframes ai-landing-hero-float-{{ ai_gen_id }} {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+  }
+
+  @media screen and (max-width: 768px) {
+    .ai-landing-hero-container-{{ ai_gen_id }} {
+      grid-template-columns: 1fr;
+      gap: 40px;
+      text-align: center;
+    }
+
+    .ai-landing-hero-content-{{ ai_gen_id }} {
+      text-align: center;
+    }
+
+    .ai-landing-hero-heading-{{ ai_gen_id }} {
+      font-size: {{ block.settings.heading_size | times: 0.8 }}px;
+    }
+
+    .ai-landing-hero-subheading-{{ ai_gen_id }} {
+      font-size: {{ block.settings.subheading_size | times: 0.9 }}px;
+    }
+
+    .ai-landing-hero-buttons-{{ ai_gen_id }} {
+      justify-content: center;
+      flex-direction: column;
+    }
+
+    .ai-landing-hero-button-{{ ai_gen_id }} {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .ai-landing-hero-features-{{ ai_gen_id }} {
+      justify-content: center;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .ai-landing-hero-decoration-circle-1-{{ ai_gen_id }} {
+      width: 120px;
+      height: 120px;
+    }
+
+    .ai-landing-hero-decoration-circle-2-{{ ai_gen_id }} {
+      width: 80px;
+      height: 80px;
+    }
+  }
+{% endstyle %}
+
+<div class="ai-landing-hero-{{ ai_gen_id }}" {{ block.shopify_attributes }}>
+  {% if block.settings.show_decorations %}
+    <div class="ai-landing-hero-background-decoration-{{ ai_gen_id }}">
+      <div class="ai-landing-hero-decoration-circle-{{ ai_gen_id }} ai-landing-hero-decoration-circle-1-{{ ai_gen_id }}"></div>
+      <div class="ai-landing-hero-decoration-circle-{{ ai_gen_id }} ai-landing-hero-decoration-circle-2-{{ ai_gen_id }}"></div>
+    </div>
+  {% endif %}
+
+  <div class="ai-landing-hero-container-{{ ai_gen_id }}">
+    <div class="ai-landing-hero-content-{{ ai_gen_id }}">
+      {% if block.settings.badge_text != blank %}
+        <div class="ai-landing-hero-badge-{{ ai_gen_id }}">
+          {{ block.settings.badge_text }}
+        </div>
+      {% endif %}
+
+      {% if block.settings.heading != blank %}
+        <h1 class="ai-landing-hero-heading-{{ ai_gen_id }}">
+          {{ block.settings.heading }}
+        </h1>
+      {% endif %}
+
+      {% if block.settings.subheading != blank %}
+        <div class="ai-landing-hero-subheading-{{ ai_gen_id }}">
+          {{ block.settings.subheading }}
+        </div>
+      {% endif %}
+
+      <div class="ai-landing-hero-buttons-{{ ai_gen_id }}">
+        {% if block.settings.primary_button_label != blank %}
+          <a href="{{ block.settings.primary_button_link }}" class="ai-landing-hero-button-{{ ai_gen_id }} ai-landing-hero-button-primary-{{ ai_gen_id }}">
+            {{ block.settings.primary_button_label }}
+            <svg class="ai-landing-hero-feature-icon-{{ ai_gen_id }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </a>
+        {% endif %}
+
+        {% if block.settings.secondary_button_label != blank %}
+          <a href="{{ block.settings.secondary_button_link }}" class="ai-landing-hero-button-{{ ai_gen_id }} ai-landing-hero-button-secondary-{{ ai_gen_id }}">
+            {{ block.settings.secondary_button_label }}
+          </a>
+        {% endif %}
+      </div>
+
+      {% if block.settings.show_features %}
+        <div class="ai-landing-hero-features-{{ ai_gen_id }}">
+          <div class="ai-landing-hero-feature-{{ ai_gen_id }}">
+            <svg class="ai-landing-hero-feature-icon-{{ ai_gen_id }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            <span>Premium Quality Materials</span>
+          </div>
+          <div class="ai-landing-hero-feature-{{ ai_gen_id }}">
+            <svg class="ai-landing-hero-feature-icon-{{ ai_gen_id }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span>Fast Processing</span>
+          </div>
+          <div class="ai-landing-hero-feature-{{ ai_gen_id }}">
+            <svg class="ai-landing-hero-feature-icon-{{ ai_gen_id }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+            </svg>
+            <span>Made with Love</span>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="ai-landing-hero-image-wrapper-{{ ai_gen_id }}">
+      {% if block.settings.hero_image %}
+        <img
+          src="{{ block.settings.hero_image | image_url: width: 800 }}"
+          alt="{{ block.settings.hero_image.alt | escape }}"
+          class="ai-landing-hero-image-{{ ai_gen_id }}"
+          loading="lazy"
+          width="{{ block.settings.hero_image.width }}"
+          height="{{ block.settings.hero_image.height }}"
+        >
+      {% else %}
+        <div class="ai-landing-hero-image-placeholder-{{ ai_gen_id }}">
+          {{ 'hero-apparel-1' | placeholder_svg_tag }}
+          <div class="ai-landing-hero-empty-state-{{ ai_gen_id }}">
+            Add your hero image to showcase your memory squares
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Memory squares hero",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "section_height",
+      "min": 50,
+      "max": 100,
+      "step": 5,
+      "unit": "vh",
+      "label": "Section height",
+      "default": 80
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_decorations",
+      "label": "Show background decorations",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_features",
+      "label": "Show feature highlights",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "badge_text",
+      "label": "Badge text",
+      "default": "Preserve Your Memories"
+    },
+    {
+      "type": "richtext",
+      "id": "heading",
+      "label": "Heading",
+      "default": "<p>Transform Your Precious Photos Into Beautiful Memory Squares</p>"
+    },
+    {
+      "type": "richtext",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "<p>Create lasting keepsakes with our premium photo squares. Perfect for displaying your favorite memories in a unique, modern way that brings joy to any space.</p>"
+    },
+    {
+      "type": "header",
+      "content": "Primary button"
+    },
+    {
+      "type": "text",
+      "id": "primary_button_label",
+      "label": "Button text",
+      "default": "Start Creating"
+    },
+    {
+      "type": "url",
+      "id": "primary_button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "header",
+      "content": "Secondary button"
+    },
+    {
+      "type": "text",
+      "id": "secondary_button_label",
+      "label": "Button text",
+      "default": "View Gallery"
+    },
+    {
+      "type": "url",
+      "id": "secondary_button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "header",
+      "content": "Image"
+    },
+    {
+      "type": "image_picker",
+      "id": "hero_image",
+      "label": "Hero image"
+    },
+    {
+      "type": "range",
+      "id": "image_border_radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Image border radius",
+      "default": 12
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color_background",
+      "id": "background_gradient",
+      "label": "Background gradient"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading color",
+      "default": "#121212"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#666666"
+    },
+    {
+      "type": "color",
+      "id": "badge_background",
+      "label": "Badge background",
+      "default": "#f0f8ff"
+    },
+    {
+      "type": "color",
+      "id": "badge_text_color",
+      "label": "Badge text color",
+      "default": "#334fb4"
+    },
+    {
+      "type": "color",
+      "id": "badge_border_color",
+      "label": "Badge border color",
+      "default": "#e6f2ff"
+    },
+    {
+      "type": "header",
+      "content": "Primary button colors"
+    },
+    {
+      "type": "color",
+      "id": "primary_button_bg",
+      "label": "Background color",
+      "default": "#334fb4"
+    },
+    {
+      "type": "color",
+      "id": "primary_button_text_color",
+      "label": "Text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "primary_button_hover_bg",
+      "label": "Hover background color",
+      "default": "#2a3f8f"
+    },
+    {
+      "type": "header",
+      "content": "Secondary button colors"
+    },
+    {
+      "type": "color",
+      "id": "secondary_button_text_color",
+      "label": "Text color",
+      "default": "#334fb4"
+    },
+    {
+      "type": "color",
+      "id": "secondary_button_border",
+      "label": "Border color",
+      "default": "#334fb4"
+    },
+    {
+      "type": "color",
+      "id": "secondary_button_hover_bg",
+      "label": "Hover background color",
+      "default": "#334fb4"
+    },
+    {
+      "type": "color",
+      "id": "secondary_button_hover_text",
+      "label": "Hover text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "min": 24,
+      "max": 72,
+      "step": 2,
+      "unit": "px",
+      "label": "Heading size",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "subheading_size",
+      "min": 14,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Subheading size",
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "button_border_radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Button border radius",
+      "default": 8
+    }
+  ],
+  "presets": [
+    {
+      "name": "Memory squares hero"
+    }
+  ]
+}
+{% endschema %}
