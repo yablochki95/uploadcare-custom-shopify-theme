@@ -1,0 +1,825 @@
+{% doc %}
+  @prompt
+    Ready To Print Your Pictures?
+    Start by uploading your pictures.
+    Select Your Pictures
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-picture-upload-{{ ai_gen_id }} {
+    padding: {{ block.settings.section_padding }}px;
+    background-color: {{ block.settings.background_color }};
+    text-align: center;
+  }
+
+  .ai-picture-upload__container-{{ ai_gen_id }} {
+    max-width: {{ block.settings.max_width }}px;
+    margin: 0 auto;
+  }
+
+  .ai-picture-upload__heading-{{ ai_gen_id }} {
+    font-size: {{ block.settings.heading_size }}px;
+    color: {{ block.settings.text_color }};
+    margin: 0 0 {{ block.settings.text_spacing }}px;
+    font-weight: 600;
+  }
+
+  .ai-picture-upload__subheading-{{ ai_gen_id }} {
+    font-size: {{ block.settings.subheading_size }}px;
+    color: {{ block.settings.text_color }};
+    margin: 0 0 {{ block.settings.text_spacing }}px;
+    opacity: 0.8;
+  }
+
+  .ai-picture-upload__description-{{ ai_gen_id }} {
+    font-size: {{ block.settings.description_size }}px;
+    color: {{ block.settings.text_color }};
+    margin: 0 0 {{ block.settings.upload_spacing }}px;
+    opacity: 0.7;
+  }
+
+  .ai-picture-upload__dropzone-{{ ai_gen_id }} {
+    border: 2px dashed {{ block.settings.border_color }};
+    border-radius: {{ block.settings.border_radius }}px;
+    padding: {{ block.settings.dropzone_padding }}px;
+    background-color: {{ block.settings.dropzone_background }};
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    min-height: {{ block.settings.dropzone_height }}px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+  }
+
+  .ai-picture-upload__dropzone-{{ ai_gen_id }}:hover {
+    border-color: {{ block.settings.border_hover_color }};
+    background-color: {{ block.settings.dropzone_hover_background }};
+  }
+
+  .ai-picture-upload__dropzone-{{ ai_gen_id }}.dragover {
+    border-color: {{ block.settings.border_active_color }};
+    background-color: {{ block.settings.dropzone_active_background }};
+    transform: scale(1.02);
+  }
+
+  .ai-picture-upload__icon-{{ ai_gen_id }} {
+    width: {{ block.settings.icon_size }}px;
+    height: {{ block.settings.icon_size }}px;
+    color: {{ block.settings.icon_color }};
+    margin-bottom: 10px;
+  }
+
+  .ai-picture-upload__dropzone-text-{{ ai_gen_id }} {
+    font-size: {{ block.settings.dropzone_text_size }}px;
+    color: {{ block.settings.text_color }};
+    font-weight: 500;
+    margin: 0;
+  }
+
+  .ai-picture-upload__dropzone-subtext-{{ ai_gen_id }} {
+    font-size: {{ block.settings.dropzone_subtext_size }}px;
+    color: {{ block.settings.text_color }};
+    opacity: 0.6;
+    margin: 0;
+  }
+
+  .ai-picture-upload__input-{{ ai_gen_id }} {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+  }
+
+  .ai-picture-upload__button-{{ ai_gen_id }} {
+    background-color: {{ block.settings.button_background }};
+    color: {{ block.settings.button_text_color }};
+    border: none;
+    padding: 12px 24px;
+    border-radius: {{ block.settings.button_border_radius }}px;
+    font-size: {{ block.settings.button_text_size }}px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  .ai-picture-upload__button-{{ ai_gen_id }}:hover {
+    background-color: {{ block.settings.button_hover_background }};
+  }
+
+  .ai-picture-upload__preview-{{ ai_gen_id }} {
+    margin-top: {{ block.settings.preview_spacing }}px;
+    display: none;
+  }
+
+  .ai-picture-upload__preview-{{ ai_gen_id }}.active {
+    display: block;
+  }
+
+  .ai-picture-upload__preview-grid-{{ ai_gen_id }} {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+
+  .ai-picture-upload__preview-item-{{ ai_gen_id }} {
+    position: relative;
+    border-radius: {{ block.settings.preview_border_radius }}px;
+    overflow: hidden;
+    background-color: #f5f5f5;
+    aspect-ratio: 1;
+  }
+
+  .ai-picture-upload__preview-image-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .ai-picture-upload__remove-button-{{ ai_gen_id }} {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+  }
+
+  .ai-picture-upload__remove-button-{{ ai_gen_id }}:hover {
+    background-color: rgba(0, 0, 0, 0.9);
+  }
+
+  .ai-picture-upload__status-{{ ai_gen_id }} {
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 14px;
+    display: none;
+  }
+
+  .ai-picture-upload__status-{{ ai_gen_id }}.success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+    display: block;
+  }
+
+  .ai-picture-upload__status-{{ ai_gen_id }}.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+    display: block;
+  }
+
+  .ai-picture-upload__file-count-{{ ai_gen_id }} {
+    font-size: {{ block.settings.file_count_size }}px;
+    color: {{ block.settings.text_color }};
+    margin-bottom: 15px;
+    font-weight: 500;
+  }
+
+  .ai-picture-upload__continue-button-{{ ai_gen_id }} {
+    background-color: {{ block.settings.continue_button_background }};
+    color: {{ block.settings.continue_button_text_color }};
+    border: none;
+    padding: 15px 30px;
+    border-radius: {{ block.settings.continue_button_border_radius }}px;
+    font-size: {{ block.settings.continue_button_text_size }}px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .ai-picture-upload__continue-button-{{ ai_gen_id }}:hover {
+    background-color: {{ block.settings.continue_button_hover_background }};
+  }
+
+  @media screen and (max-width: 749px) {
+    .ai-picture-upload__preview-grid-{{ ai_gen_id }} {
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 10px;
+    }
+
+    .ai-picture-upload__dropzone-{{ ai_gen_id }} {
+      padding: 30px 20px;
+      min-height: 200px;
+    }
+
+    .ai-picture-upload__heading-{{ ai_gen_id }} {
+      font-size: calc({{ block.settings.heading_size }}px * 0.8);
+    }
+
+    .ai-picture-upload__subheading-{{ ai_gen_id }} {
+      font-size: calc({{ block.settings.subheading_size }}px * 0.9);
+    }
+  }
+{% endstyle %}
+
+<picture-upload-{{ ai_gen_id }}
+  class="ai-picture-upload-{{ ai_gen_id }}"
+  {{ block.shopify_attributes }}
+>
+  <div class="ai-picture-upload__container-{{ ai_gen_id }}">
+    {% if block.settings.heading != blank %}
+      <h2 class="ai-picture-upload__heading-{{ ai_gen_id }}">{{ block.settings.heading }}</h2>
+    {% endif %}
+
+    {% if block.settings.subheading != blank %}
+      <p class="ai-picture-upload__subheading-{{ ai_gen_id }}">{{ block.settings.subheading }}</p>
+    {% endif %}
+
+    {% if block.settings.description != blank %}
+      <p class="ai-picture-upload__description-{{ ai_gen_id }}">{{ block.settings.description }}</p>
+    {% endif %}
+
+    <div class="ai-picture-upload__dropzone-{{ ai_gen_id }}" data-dropzone>
+      <svg class="ai-picture-upload__icon-{{ ai_gen_id }}" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+      </svg>
+      
+      <p class="ai-picture-upload__dropzone-text-{{ ai_gen_id }}">{{ block.settings.dropzone_text }}</p>
+      <p class="ai-picture-upload__dropzone-subtext-{{ ai_gen_id }}">{{ block.settings.dropzone_subtext }}</p>
+      
+      <button type="button" class="ai-picture-upload__button-{{ ai_gen_id }}">
+        {{ block.settings.button_text }}
+      </button>
+      
+      <input
+        type="file"
+        class="ai-picture-upload__input-{{ ai_gen_id }}"
+        multiple
+        accept="image/*"
+        data-file-input
+      >
+    </div>
+
+    <div class="ai-picture-upload__status-{{ ai_gen_id }}" data-status></div>
+
+    <div class="ai-picture-upload__preview-{{ ai_gen_id }}" data-preview>
+      <div class="ai-picture-upload__file-count-{{ ai_gen_id }}" data-file-count></div>
+      <div class="ai-picture-upload__preview-grid-{{ ai_gen_id }}" data-preview-grid></div>
+      
+      {% if block.settings.continue_button_text != blank and block.settings.continue_button_link != blank %}
+        <a href="{{ block.settings.continue_button_link }}" class="ai-picture-upload__continue-button-{{ ai_gen_id }}">
+          {{ block.settings.continue_button_text }}
+        </a>
+      {% endif %}
+    </div>
+  </div>
+</picture-upload-{{ ai_gen_id }}>
+
+<script>
+  (function() {
+    class PictureUpload{{ ai_gen_id }} extends HTMLElement {
+      constructor() {
+        super();
+        this.files = [];
+        this.maxFiles = {{ block.settings.max_files }};
+        this.maxFileSize = {{ block.settings.max_file_size }} * 1024 * 1024;
+      }
+
+      connectedCallback() {
+        this.dropzone = this.querySelector('[data-dropzone]');
+        this.fileInput = this.querySelector('[data-file-input]');
+        this.preview = this.querySelector('[data-preview]');
+        this.previewGrid = this.querySelector('[data-preview-grid]');
+        this.fileCount = this.querySelector('[data-file-count]');
+        this.status = this.querySelector('[data-status]');
+        this.button = this.querySelector('.ai-picture-upload__button-{{ ai_gen_id }}');
+
+        this.setupEventListeners();
+      }
+
+      setupEventListeners() {
+        this.dropzone.addEventListener('click', () => this.fileInput.click());
+        this.button.addEventListener('click', (e) => {
+          e.stopPropagation();
+          this.fileInput.click();
+        });
+
+        this.fileInput.addEventListener('change', (e) => this.handleFiles(e.target.files));
+
+        this.dropzone.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          this.dropzone.classList.add('dragover');
+        });
+
+        this.dropzone.addEventListener('dragleave', () => {
+          this.dropzone.classList.remove('dragover');
+        });
+
+        this.dropzone.addEventListener('drop', (e) => {
+          e.preventDefault();
+          this.dropzone.classList.remove('dragover');
+          this.handleFiles(e.dataTransfer.files);
+        });
+      }
+
+      handleFiles(fileList) {
+        const newFiles = Array.from(fileList).filter(file => {
+          if (!file.type.startsWith('image/')) {
+            this.showStatus('Only image files are allowed.', 'error');
+            return false;
+          }
+          if (file.size > this.maxFileSize) {
+            this.showStatus(`File "${file.name}" is too large. Maximum size is {{ block.settings.max_file_size }}MB.`, 'error');
+            return false;
+          }
+          return true;
+        });
+
+        if (this.files.length + newFiles.length > this.maxFiles) {
+          this.showStatus(`You can only upload up to ${this.maxFiles} files.`, 'error');
+          return;
+        }
+
+        newFiles.forEach(file => {
+          this.files.push(file);
+          this.createPreview(file);
+        });
+
+        this.updateFileCount();
+        this.showPreview();
+        this.showStatus(`${newFiles.length} file(s) added successfully!`, 'success');
+      }
+
+      createPreview(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const previewItem = document.createElement('div');
+          previewItem.className = 'ai-picture-upload__preview-item-{{ ai_gen_id }}';
+          
+          previewItem.innerHTML = `
+            <img src="${e.target.result}" alt="Preview" class="ai-picture-upload__preview-image-{{ ai_gen_id }}">
+            <button type="button" class="ai-picture-upload__remove-button-{{ ai_gen_id }}" data-remove>×</button>
+          `;
+
+          const removeButton = previewItem.querySelector('[data-remove]');
+          removeButton.addEventListener('click', () => this.removeFile(file, previewItem));
+
+          this.previewGrid.appendChild(previewItem);
+        };
+        reader.readAsDataURL(file);
+      }
+
+      removeFile(file, previewItem) {
+        const index = this.files.indexOf(file);
+        if (index > -1) {
+          this.files.splice(index, 1);
+          previewItem.remove();
+          this.updateFileCount();
+          
+          if (this.files.length === 0) {
+            this.hidePreview();
+          }
+        }
+      }
+
+      updateFileCount() {
+        const count = this.files.length;
+        const maxFiles = this.maxFiles;
+        this.fileCount.textContent = `${count} of ${maxFiles} files selected`;
+      }
+
+      showPreview() {
+        this.preview.classList.add('active');
+      }
+
+      hidePreview() {
+        this.preview.classList.remove('active');
+      }
+
+      showStatus(message, type) {
+        this.status.textContent = message;
+        this.status.className = `ai-picture-upload__status-{{ ai_gen_id }} ${type}`;
+        
+        setTimeout(() => {
+          this.status.style.display = 'none';
+        }, 5000);
+      }
+    }
+
+    customElements.define('picture-upload-{{ ai_gen_id }}', PictureUpload{{ ai_gen_id }});
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Picture upload",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Ready To Print Your Pictures?"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Start by uploading your pictures."
+    },
+    {
+      "type": "textarea",
+      "id": "description",
+      "label": "Description",
+      "default": "Select Your Pictures"
+    },
+    {
+      "type": "text",
+      "id": "dropzone_text",
+      "label": "Dropzone main text",
+      "default": "Drag and drop your images here"
+    },
+    {
+      "type": "text",
+      "id": "dropzone_subtext",
+      "label": "Dropzone subtext",
+      "default": "or click to browse"
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "Upload button text",
+      "default": "Choose Files"
+    },
+    {
+      "type": "header",
+      "content": "Upload settings"
+    },
+    {
+      "type": "range",
+      "id": "max_files",
+      "min": 1,
+      "max": 50,
+      "step": 1,
+      "label": "Maximum files",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "max_file_size",
+      "min": 1,
+      "max": 20,
+      "step": 1,
+      "unit": "MB",
+      "label": "Maximum file size",
+      "default": 10
+    },
+    {
+      "type": "header",
+      "content": "Continue button"
+    },
+    {
+      "type": "text",
+      "id": "continue_button_text",
+      "label": "Continue button text",
+      "default": "Continue to Checkout"
+    },
+    {
+      "type": "url",
+      "id": "continue_button_link",
+      "label": "Continue button link"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "max_width",
+      "min": 400,
+      "max": 1200,
+      "step": 50,
+      "unit": "px",
+      "label": "Maximum width",
+      "default": 800
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "min": 20,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "label": "Section padding",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "text_spacing",
+      "min": 10,
+      "max": 50,
+      "step": 5,
+      "unit": "px",
+      "label": "Text spacing",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "upload_spacing",
+      "min": 20,
+      "max": 80,
+      "step": 5,
+      "unit": "px",
+      "label": "Upload area spacing",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "preview_spacing",
+      "min": 20,
+      "max": 60,
+      "step": 5,
+      "unit": "px",
+      "label": "Preview spacing",
+      "default": 30
+    },
+    {
+      "type": "header",
+      "content": "Dropzone style"
+    },
+    {
+      "type": "range",
+      "id": "dropzone_height",
+      "min": 200,
+      "max": 400,
+      "step": 20,
+      "unit": "px",
+      "label": "Dropzone height",
+      "default": 300
+    },
+    {
+      "type": "range",
+      "id": "dropzone_padding",
+      "min": 20,
+      "max": 80,
+      "step": 5,
+      "unit": "px",
+      "label": "Dropzone padding",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "min": 0,
+      "max": 20,
+      "step": 2,
+      "unit": "px",
+      "label": "Border radius",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "preview_border_radius",
+      "min": 0,
+      "max": 15,
+      "step": 1,
+      "unit": "px",
+      "label": "Preview border radius",
+      "default": 6
+    },
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "min": 20,
+      "max": 50,
+      "step": 2,
+      "unit": "px",
+      "label": "Heading size",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "subheading_size",
+      "min": 14,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Subheading size",
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "description_size",
+      "min": 12,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Description size",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "dropzone_text_size",
+      "min": 14,
+      "max": 22,
+      "step": 1,
+      "unit": "px",
+      "label": "Dropzone text size",
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "dropzone_subtext_size",
+      "min": 12,
+      "max": 18,
+      "step": 1,
+      "unit": "px",
+      "label": "Dropzone subtext size",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "button_text_size",
+      "min": 12,
+      "max": 18,
+      "step": 1,
+      "unit": "px",
+      "label": "Button text size",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "file_count_size",
+      "min": 12,
+      "max": 18,
+      "step": 1,
+      "unit": "px",
+      "label": "File count size",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "continue_button_text_size",
+      "min": 14,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Continue button text size",
+      "default": 16
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#121212"
+    },
+    {
+      "type": "color",
+      "id": "dropzone_background",
+      "label": "Dropzone background",
+      "default": "#f9f9f9"
+    },
+    {
+      "type": "color",
+      "id": "dropzone_hover_background",
+      "label": "Dropzone hover background",
+      "default": "#f0f0f0"
+    },
+    {
+      "type": "color",
+      "id": "dropzone_active_background",
+      "label": "Dropzone active background",
+      "default": "#e8f4fd"
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "Border color",
+      "default": "#cccccc"
+    },
+    {
+      "type": "color",
+      "id": "border_hover_color",
+      "label": "Border hover color",
+      "default": "#999999"
+    },
+    {
+      "type": "color",
+      "id": "border_active_color",
+      "label": "Border active color",
+      "default": "#007acc"
+    },
+    {
+      "type": "color",
+      "id": "icon_color",
+      "label": "Icon color",
+      "default": "#666666"
+    },
+    {
+      "type": "range",
+      "id": "icon_size",
+      "min": 30,
+      "max": 80,
+      "step": 5,
+      "unit": "px",
+      "label": "Icon size",
+      "default": 50
+    },
+    {
+      "type": "header",
+      "content": "Button style"
+    },
+    {
+      "type": "color",
+      "id": "button_background",
+      "label": "Button background",
+      "default": "#121212"
+    },
+    {
+      "type": "color",
+      "id": "button_hover_background",
+      "label": "Button hover background",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Button text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "button_border_radius",
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Button border radius",
+      "default": 4
+    },
+    {
+      "type": "header",
+      "content": "Continue button style"
+    },
+    {
+      "type": "color",
+      "id": "continue_button_background",
+      "label": "Continue button background",
+      "default": "#334fb4"
+    },
+    {
+      "type": "color",
+      "id": "continue_button_hover_background",
+      "label": "Continue button hover background",
+      "default": "#2a3f8f"
+    },
+    {
+      "type": "color",
+      "id": "continue_button_text_color",
+      "label": "Continue button text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "continue_button_border_radius",
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Continue button border radius",
+      "default": 6
+    }
+  ],
+  "presets": [
+    {
+      "name": "Picture upload"
+    }
+  ]
+}
+{% endschema %}
